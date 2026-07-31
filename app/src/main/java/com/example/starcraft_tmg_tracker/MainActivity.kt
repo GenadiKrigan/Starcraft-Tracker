@@ -1,10 +1,12 @@
 package com.example.starcraft_tmg_tracker
 
+import android.R
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -12,6 +14,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -167,6 +170,51 @@ fun PlayerCard(
                     Text("+", fontSize = 32.sp, color = playerColor, fontWeight = FontWeight.Bold)
                 }
             }
+        }
+    }
+}
+
+@Composable
+fun RoundCounter(
+    currentRound: Int,
+    onRoundIncrease: () -> Unit,
+    onRoundDecrease: () -> Unit,
+    modifier: Modifier = Modifier
+){
+    Card(
+        modifier = modifier.padding(8.dp),
+        shape = RoundedCornerShape(16.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+    ){
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.padding(16.dp)
+        ){
+            //כותרת המונה
+            Text(text = "ROUND", fontSize = 16.sp, color = Color.Gray)
+            //שורה שמכילה את הפלוס, המינוס והמספר
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center,
+                modifier = Modifier.padding(top = 8.dp)
+            ){
+                //כפתור המינוס
+                FilledIconButton(onClick = onRoundDecrease) {
+                    Text("-", fontWeight = FontWeight.Bold, fontSize = 20.sp)
+                }
+                //מספר הסיבוב הנוכחי
+                Text(
+                    text = "$currentRound",
+                    fontSize = 32.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(horizontal = 24.dp)
+                )
+                //כםתור פלוס
+                FilledIconButton(onClick = onRoundIncrease) {
+                    Text("+", fontWeight = FontWeight.Bold, fontSize = 20.sp)
+                }
+            }
+
         }
     }
 }

@@ -1,12 +1,10 @@
 package com.example.starcraft_tmg_tracker
 
-import android.R
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -14,7 +12,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -58,9 +55,7 @@ fun GameScreen(modifier: Modifier = Modifier) {
             onVpIncrease = { blueVp++ },
             onVpDecrease = { if (blueVp > 0) blueVp-- },
             supplyCurrent = blueSupply,
-            supplyMax = maxSupply,
-            onSupplyIncrease = { if (blueSupply < maxSupply) blueSupply++ }, // מוגבל עד המקסימום
-            onSupplyDecrease = { if (blueSupply > 0) blueSupply-- } // מוגבל עד לאפס
+            supplyMax = maxSupply
         )
     }
 }
@@ -74,8 +69,6 @@ fun PlayerCard(
     onVpDecrease: () -> Unit,
     supplyCurrent: Int,
     supplyMax: Int,
-    onSupplyIncrease: () -> Unit,
-    onSupplyDecrease: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Card(
@@ -98,6 +91,7 @@ fun PlayerCard(
                 fontWeight = FontWeight.Bold
             )
 
+            // שימוש ב-HorizontalDivider המעודכן לגרסאות החדשות
             HorizontalDivider(
                 color = playerColor.copy(alpha = 0.5f),
                 modifier = Modifier.padding(vertical = 16.dp)
@@ -139,37 +133,11 @@ fun PlayerCard(
             Spacer(modifier = Modifier.height(24.dp))
 
             Text(text = "SUPPLY", fontSize = 18.sp, color = Color.Gray)
-
-            // שורת כפתורים חדשה גם ל-Supply
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 12.dp)
-            ) {
-                FilledIconButton(
-                    onClick = onSupplyDecrease,
-                    modifier = Modifier.size(64.dp),
-                    colors = IconButtonDefaults.filledIconButtonColors(containerColor = playerColor.copy(alpha = 0.1f))
-                ) {
-                    Text("-", fontSize = 32.sp, color = playerColor, fontWeight = FontWeight.Bold)
-                }
-
-                Text(
-                    text = "$supplyCurrent / $supplyMax",
-                    fontSize = 40.sp,
-                    fontWeight = FontWeight.Bold
-                )
-
-                FilledIconButton(
-                    onClick = onSupplyIncrease,
-                    modifier = Modifier.size(64.dp),
-                    colors = IconButtonDefaults.filledIconButtonColors(containerColor = playerColor.copy(alpha = 0.1f))
-                ) {
-                    Text("+", fontSize = 32.sp, color = playerColor, fontWeight = FontWeight.Bold)
-                }
-            }
+            Text(
+                text = "$supplyCurrent / $supplyMax",
+                fontSize = 40.sp,
+                fontWeight = FontWeight.Bold
+            )
         }
     }
 }

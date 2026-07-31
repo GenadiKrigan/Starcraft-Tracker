@@ -259,7 +259,7 @@ fun RoundCounter(
 // ---------------------------------------------------------
 // תצוגה מקדימה (Preview) - מאפשר לראות את העיצוב בלי להריץ על טלפון
 // ---------------------------------------------------------
-@Preview(showBackground = true, widthDp = 800, heightDp = 600) // הגדרנו רוחב גדול שמדמה Landscape
+@Preview(showBackground = true, widthDp = 800, heightDp = 400) // הגדרנו רוחב גדול שמדמה Landscape
 @Composable
 fun GameScreenPreview() {
     StarcraftTMGTrackerTheme {

@@ -53,6 +53,7 @@ fun GameScreen(modifier: Modifier = Modifier) {
     var redSupply by remember { mutableStateOf(0) }
 
     val maxSupply = 15// המקסימום המותר לאספקה
+    val maxRound = 6
 
     // 2. מבנה המסך הראשי - עמודה שמסדרת הכל מלמעלה למטה
     Column(
@@ -63,7 +64,8 @@ fun GameScreen(modifier: Modifier = Modifier) {
         // 3. קריאה למונה הסיבובים שיצרנו (יופיע למעלה כי הוא ראשון בעמודה)
         RoundCounter(
             currentRound = currentRound,
-            onRoundIncrease = { currentRound++ },
+            roundMax = maxRound,
+            onRoundIncrease = { if(currentRound < maxRound) currentRound++ },
             onRoundDecrease = { if (currentRound > 1) currentRound-- }
         )
         // 4. שורה שמחלקת את המסך לשניים - שחקן כחול מול שחקן אדום (יופיעו מתחת למונה)
@@ -214,6 +216,7 @@ fun PlayerCard(
 @Composable
 fun RoundCounter(
     currentRound: Int,
+    roundMax: Int,
     onRoundIncrease: () -> Unit,
     onRoundDecrease: () -> Unit,
     modifier: Modifier = Modifier
@@ -241,7 +244,7 @@ fun RoundCounter(
                 }
                 //מספר הסיבוב הנוכחי
                 Text(
-                    text = "$currentRound",
+                    text = "$currentRound / $roundMax",
                     fontSize = 32.sp,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(horizontal = 24.dp)
@@ -256,6 +259,91 @@ fun RoundCounter(
     }
 }
 
+//SetupScreen
+@Composable
+fun SettingRow(
+    label: String,
+    value: Int,
+    onDecrease: () -> Unit,
+    onIncrease: () -> Unit
+){
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween,
+        modifier = Modifier
+            .fillMaxWidth(0.8f) // תופס 80& מרוחב המסך
+            .padding(vertical = 8.dp)
+    ){
+        //שם ההגדרה (למשל: "Total Rounds")
+        Text(text = label, fontSize = 18.sp, fontWeight = FontWeight.Medium)
+
+        //אזור הכפתורים והמספר
+        Row(verticalAlignment = Alignment.CenterVertically){
+            FilledIconButton(onClick = onDecrease, modifier = Modifier.size(40.dp)) {
+                Text("-", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+            }
+            Text(
+                text = "$value",
+                fontSize = 24.sp,
+                modifier = Modifier.padding(horizontal = 24.dp)
+            )
+            FilledIconButton(onClick = onIncrease, modifier = Modifier.size(40.dp)) {
+                Text("+", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+            }
+        }
+    }
+}
+
+// המסך המלא של ההגדרות
+@Composable
+fun SetupScreen(onStartGameClick: (totalRounds: Int, startingSupply: Int, supplyIncrease: Int) -> Unit){
+    // 1. משתני הזיכרון (State) להגדרות ההתחלתיות (ברירת מחדל)
+    var rounds by remember { mutableStateOf(5) }
+    var startSupply by remember { mutableStateOf(3) }
+    var supplyIncrease by remember { mutableStateOf(1) }
+
+    // 2. סידור המסך בטור
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Text("GAME SETUP", fontSize = 32.sp, fontWeight = FontWeight.Bold)
+        Spacer(modifier = Modifier.height(32.dp))
+
+        // 3. שימוש באבן הבניין שלנו 3 פעמים
+        SettingRow(
+            label = "Total Rounds",
+            value = rounds,
+            onDecrease = { if (rounds > 1) rounds-- },
+            onIncrease = { rounds++ }
+        )
+
+        SettingRow(
+            label = "Starting Supply",
+            value = startSupply,
+            onDecrease = { if (startSupply > 1) startSupply-- },
+            onIncrease = { startSupply++ }
+        )
+
+        SettingRow(
+            label = "Supply Increase Per Round",
+            value = supplyIncrease,
+            onDecrease = { if (supplyIncrease > 1) supplyIncrease-- },
+            onIncrease = { supplyIncrease++ }
+        )
+        Spacer(modifier = Modifier.height(32.dp))
+
+        // 4. כפתור התחלת המשחק
+        Button(
+            onClick = { onStartGameClick(rounds, startSupply, supplyIncrease) },
+            modifier = Modifier.padding(16.dp)
+        ){
+            Text("START GAME", fontSize = 20.sp, modifier = Modifier.padding(8.dp))
+        }
+    }
+}
+
 // ---------------------------------------------------------
 // תצוגה מקדימה (Preview) - מאפשר לראות את העיצוב בלי להריץ על טלפון
 // ---------------------------------------------------------
@@ -264,5 +352,17 @@ fun RoundCounter(
 fun GameScreenPreview() {
     StarcraftTMGTrackerTheme {
         GameScreen()
+    }
+}
+
+@Preview(showBackground = true, widthDp = 500, heightDp = 640)
+@Composable
+fun SetupScreenPreview() {
+    StarcraftTMGTrackerTheme { // שים לב שזה ה-Theme הייחודי של הפרויקט שלך
+        SetupScreen(
+            onStartGameClick = { rounds, startSupply, supplyIncrease ->
+                // זוהי רק תצוגה מקדימה, אז אנחנו משאירים את הפעולה ריקה כרגע
+            }
+        )
     }
 }

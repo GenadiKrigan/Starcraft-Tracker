@@ -17,6 +17,9 @@ import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import android.app.Activity
+import android.content.pm.ActivityInfo
+import androidx.compose.ui.platform.LocalContext
 import com.example.starcraft_tmg_tracker.ui.theme.StarcraftTMGTrackerTheme
 
 class MainActivity : ComponentActivity() {
@@ -271,11 +274,15 @@ fun SettingRow(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
         modifier = Modifier
-            .fillMaxWidth(0.8f) // תופס 80& מרוחב המסך
+            .fillMaxWidth(0.9f) // תופס 90% מרוחב המסך
             .padding(vertical = 8.dp)
     ){
         //שם ההגדרה (למשל: "Total Rounds")
-        Text(text = label, fontSize = 18.sp, fontWeight = FontWeight.Medium)
+        Text(text = label,
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Medium,
+            modifier = Modifier.weight(1f).padding(end = 8.dp)
+        )
 
         //אזור הכפתורים והמספר
         Row(verticalAlignment = Alignment.CenterVertically){
@@ -344,6 +351,28 @@ fun SetupScreen(onStartGameClick: (totalRounds: Int, startingSupply: Int, supply
     }
 }
 
+@Composable
+fun LockScreenOrientation(orientation: Int) {
+    // 1. השגת הגישה ל"מסך הפיזי" (ה-Activity) של הטלפון
+    val context = LocalContext.current
+
+    // 2. אפקט חד-פעמי שקורה כשהקומפוננטה הזו עולה למסך
+    DisposableEffect(orientation){
+        val activity = context as? Activity ?: return@DisposableEffect onDispose {}
+
+        // שומרים בזיכרון מה היה המצב הקודם של המסך (כדי שנוכל להחזיר אותו אחר כך)
+        val originalOrientation = activity.requestedOrientation
+
+        // 3. משנים את כיוון המסך לכיוון שביקשנו (למשל לרוחב)
+        activity.requestedOrientation = orientation
+
+        // 4. מה קורה כשיוצאים מהמסך? (onDispose) - מחזירים את המצב לקדמותו
+        onDispose {
+            activity.requestedOrientation = originalOrientation
+        }
+    }
+}
+
 // ---------------------------------------------------------
 // תצוגה מקדימה (Preview) - מאפשר לראות את העיצוב בלי להריץ על טלפון
 // ---------------------------------------------------------
@@ -355,7 +384,7 @@ fun GameScreenPreview() {
     }
 }
 
-@Preview(showBackground = true, widthDp = 500, heightDp = 640)
+@Preview(showBackground = true, widthDp = 360, heightDp = 640)
 @Composable
 fun SetupScreenPreview() {
     StarcraftTMGTrackerTheme { // שים לב שזה ה-Theme הייחודי של הפרויקט שלך

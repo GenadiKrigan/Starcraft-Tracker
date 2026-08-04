@@ -17,6 +17,11 @@ import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavType
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import android.app.Activity
 import android.content.pm.ActivityInfo
 import androidx.compose.ui.platform.LocalContext
@@ -30,8 +35,8 @@ class MainActivity : ComponentActivity() {
             // שימוש ב-Theme הייחודי של הפרויקט שלך
             StarcraftTMGTrackerTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    // קריאה למסך שלנו והעברת הריווח (Padding) כדי שהתוכן לא יוסתר תחת שורת הסטטוס
-                    GameScreen(modifier = Modifier.padding(innerPadding))
+                    // קוראים למערכת הניווט במקום למסך בודד
+                    AppNavigation(modifier = Modifier.padding(innerPadding))
                 }
             }
         }
@@ -43,20 +48,25 @@ class MainActivity : ComponentActivity() {
 // ---------------------------------------------------------
 
 @Composable
-fun GameScreen(modifier: Modifier = Modifier) {
+fun GameScreen(
+    totalRounds: Int,
+    startingSupply: Int,
+    supplyIncrease: Int,
+    modifier: Modifier = Modifier
+) {
     // 1. משתני הזיכרון (State) - שומרים את הנתונים של כל המשחק
     var currentRound by remember {mutableStateOf(1)}//מתחילים מסיבוב 1
 
     //נתונים של השחקן הכחול
     var blueVp by remember {mutableStateOf(0)}
-    var blueSupply by remember { mutableStateOf(0) }
+    var blueSupply by remember { mutableStateOf(startingSupply) }
 
     //נתונים של השחקן הכחול
     var redVp by remember {mutableStateOf(0)}
-    var redSupply by remember { mutableStateOf(0) }
+    var redSupply by remember { mutableStateOf(startingSupply) }
 
     val maxSupply = 15// המקסימום המותר לאספקה
-    val maxRound = 6
+    val maxRound = totalRounds
 
     // 2. מבנה המסך הראשי - עמודה שמסדרת הכל מלמעלה למטה
     Column(
@@ -373,16 +383,60 @@ fun LockScreenOrientation(orientation: Int) {
     }
 }
 
+@Composable
+fun AppNavigation(modifier: Modifier = Modifier) {
+    // 1. יצירת ה"נווט" שזוכר באיזה מסך אנחנו נמצאים
+    val navController = rememberNavController()
+
+    // 2. מפת המסכים (NavHost) - מתחילים במסך ה-setup
+    NavHost(navController = navController, startDestination = "setup") {
+        // --- תחנה ראשונה: מסך ההגדרות ---
+        composable("setup") {
+            SetupScreen(
+                onStartGameClick = { rounds, startSupply, supplyIncrease ->
+                    // כשהשחקן לוחץ התחל, אנחנו מנווטים למסך המשחק ומעבירים לו את המספרים בתוך הקישור
+                    navController.navigate("game/$rounds/$startSupply/$supplyIncrease")
+                }
+            )
+        }
+
+        // --- תחנה שנייה: מסך המשחק הראשי ---
+        composable(
+            route = "game/{rounds}/{startSupply}/{supplyIncrease}",
+            arguments = listOf(
+                navArgument("rounds") { type = NavType.IntType },
+                navArgument("startSupply") { type = NavType.IntType },
+                navArgument("supplyIncrease") { type = NavType.IntType }
+            )
+        ){ backStackEntry ->
+            // חילוץ המספרים שהעברנו מהמסך הקודם
+            val rounds = backStackEntry.arguments?.getInt("rounds") ?: 5
+            val startSupply = backStackEntry.arguments?.getInt("startSupply") ?: 3
+            val supplyIncrease = backStackEntry.arguments?.getInt("supplyIncrease") ?: 1
+
+            // כאן קורה הקסם: נועלים את המסך לרוחב רק כשאנחנו בתוך מסך המשחק!
+            LockScreenOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE)
+
+            // הפעלת מסך המשחק עם הנתונים החדשים
+            GameScreen(
+                totalRounds = rounds,
+                startingSupply = startSupply,
+                supplyIncrease = supplyIncrease
+            )
+        }
+    }
+}
+
 // ---------------------------------------------------------
 // תצוגה מקדימה (Preview) - מאפשר לראות את העיצוב בלי להריץ על טלפון
 // ---------------------------------------------------------
 @Preview(showBackground = true, widthDp = 800, heightDp = 400) // הגדרנו רוחב גדול שמדמה Landscape
-@Composable
+/*@Composable
 fun GameScreenPreview() {
     StarcraftTMGTrackerTheme {
         GameScreen()
     }
-}
+}*/
 
 @Preview(showBackground = true, widthDp = 360, heightDp = 640)
 @Composable

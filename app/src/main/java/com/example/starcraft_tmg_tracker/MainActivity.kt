@@ -55,7 +55,7 @@ fun GameScreen(
     modifier: Modifier = Modifier
 ) {
     // 1. משתני הזיכרון (State) - שומרים את הנתונים של כל המשחק
-    var currentRound by remember {mutableStateOf(1)}//מתחילים מסיבוב 1
+    var currentRound by remember {mutableStateOf(1)} //מתחילים מסיבוב 1
 
     //נתונים של השחקן הכחול
     var blueVp by remember {mutableStateOf(0)}
@@ -65,8 +65,15 @@ fun GameScreen(
     var redVp by remember {mutableStateOf(0)}
     var redSupply by remember { mutableStateOf(startingSupply) }
 
-    val maxSupply = 15// המקסימום המותר לאספקה
+    // המקסימום הרגיל המותר לאספקה
+    val normalMaxSupply = 15
     val maxRound = totalRounds
+
+    // בדיקה חכמה: האם אנחנו כרגע בסיבוב האחרון
+    val isLastRound = currentRound == maxRound
+
+    //קובעים את המקסימום הנוכחי: אם סיבוב אחרון נשים מספר ענק כדי ש"לא תהיה הגבלה", אחרת 15
+    val currentMaxSupply = if (isLastRound) 999 else normalMaxSupply
 
     // 2. מבנה המסך הראשי - עמודה שמסדרת הכל מלמעלה למטה
     Column(
@@ -78,7 +85,19 @@ fun GameScreen(
         RoundCounter(
             currentRound = currentRound,
             roundMax = maxRound,
-            onRoundIncrease = { if(currentRound < maxRound) currentRound++ },
+            onRoundIncrease = {
+                if(currentRound < maxRound){
+                    currentRound++
+                    // מוסיפים לשני השחקנים את תוספת האספקה שהוגדרה מראש
+                    blueSupply += supplyIncrease
+                    redSupply += supplyIncrease
+                }
+                // מוודאים שהאספקה לא עוברת את המקסימום (בודקים כבר לפי הסיבוב החדש)
+                if (currentRound < maxRound) {
+                    if (blueSupply > normalMaxSupply) blueSupply = normalMaxSupply
+                    if (redSupply > normalMaxSupply) redSupply = normalMaxSupply
+                }
+                              },
             onRoundDecrease = { if (currentRound > 1) currentRound-- }
         )
         // 4. שורה שמחלקת את המסך לשניים - שחקן כחול מול שחקן אדום (יופיעו מתחת למונה)
@@ -95,8 +114,8 @@ fun GameScreen(
                 onVpIncrease = { blueVp++ },
                 onVpDecrease = { if (blueVp > 0) blueVp-- },
                 supplyCurrent = blueSupply,
-                supplyMax = maxSupply,
-                onSupplyIncrease = { if (blueSupply < maxSupply) blueSupply++ },
+                supplyMax = normalMaxSupply,
+                onSupplyIncrease = { if (blueSupply < normalMaxSupply) blueSupply++ },
                 onSupplyDecrease = { if (blueSupply > 0) blueSupply-- },
                 modifier = Modifier.weight(1f) //מחלק את המקום בשורה שווה בשווה
             )
@@ -108,8 +127,8 @@ fun GameScreen(
                 onVpIncrease = { redVp++ },
                 onVpDecrease = { if (redVp > 0) redVp-- },
                 supplyCurrent = redSupply,
-                supplyMax = maxSupply,
-                onSupplyIncrease = { if (redSupply < maxSupply) redSupply++ },
+                supplyMax = normalMaxSupply,
+                onSupplyIncrease = { if (redSupply < normalMaxSupply) redSupply++ },
                 onSupplyDecrease = { if (redSupply > 0) redSupply-- },
                 modifier = Modifier.weight(1f) // לוקח בדיוק את אותו משקל (מקום) כמו הכחול
             )

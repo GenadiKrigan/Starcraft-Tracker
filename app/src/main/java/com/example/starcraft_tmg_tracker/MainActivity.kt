@@ -23,6 +23,8 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import android.app.Activity
 import android.content.pm.ActivityInfo
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.ui.platform.LocalContext
 import com.example.starcraft_tmg_tracker.ui.theme.StarcraftTMGTrackerTheme
 
@@ -75,7 +77,10 @@ fun GameScreen(
 
     // 2. מבנה המסך הראשי - עמודה שמסדרת הכל מלמעלה למטה
     Column(
-        modifier = modifier.fillMaxSize().padding(8.dp), // תופס את כל המסך עם קצת רווח בקצוות
+        modifier = modifier
+            .fillMaxSize()
+            .padding(8.dp)
+            .verticalScroll(rememberScrollState()), // <--- הוספנו את רשת הביטחון כאן!
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceEvenly // מרווח את האלמנטים בצורה שווה מלעלה למטה
     ) {
@@ -156,7 +161,7 @@ fun PlayerCard(
 ) {
     Card(
         modifier = modifier
-            .padding(8.dp)
+            .padding(4.dp) // הוקטן מ-8
             .fillMaxWidth(0.9f),
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
@@ -164,33 +169,33 @@ fun PlayerCard(
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
-                .padding(12.dp)
+                .padding(8.dp) // הוקטן מ-12 כדי לחסוך מקום
                 .fillMaxWidth()
         ) {
             Text(
                 text = playerName,
-                fontSize = 22.sp,
+                fontSize = 20.sp, // הוקטן מ-22
                 color = playerColor,
                 fontWeight = FontWeight.Bold
             )
 
             HorizontalDivider(
                 color = playerColor.copy(alpha = 0.5f),
-                modifier = Modifier.padding(vertical = 8.dp)
+                modifier = Modifier.padding(vertical = 4.dp) // הוקטן מ-8
             )
 
-            Text(text = "VICTORY POINTS (VP)", fontSize = 14.sp, color = Color.Gray)
+            Text(text = "VICTORY POINTS (VP)", fontSize = 12.sp, color = Color.Gray) // הוקטן מ-14
 
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 4.dp)
+                    .padding(vertical = 2.dp) // הוקטן מ-4
             ) {
                 FilledIconButton(
                     onClick = onVpDecrease,
-                    modifier = Modifier.size(48.dp),
+                    modifier = Modifier.size(40.dp), // הוקטן מ-48
                     colors = IconButtonDefaults.filledIconButtonColors(containerColor = playerColor.copy(alpha = 0.1f))
                 ) {
                     Text("-", fontSize = 24.sp, color = playerColor, fontWeight = FontWeight.Bold)
@@ -198,35 +203,34 @@ fun PlayerCard(
 
                 Text(
                     text = "$vpValue",
-                    fontSize = 56.sp,
+                    fontSize = 48.sp, // הוקטן מ-56
                     fontWeight = FontWeight.Bold,
                     color = playerColor
                 )
 
                 FilledIconButton(
                     onClick = onVpIncrease,
-                    modifier = Modifier.size(48.dp),
+                    modifier = Modifier.size(40.dp), // הוקטן מ-48
                     colors = IconButtonDefaults.filledIconButtonColors(containerColor = playerColor.copy(alpha = 0.1f))
                 ) {
                     Text("+", fontSize = 24.sp, color = playerColor, fontWeight = FontWeight.Bold)
                 }
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(4.dp)) // הוקטן מ-8
 
-            Text(text = "SUPPLY", fontSize = 14.sp, color = Color.Gray)
+            Text(text = "SUPPLY", fontSize = 12.sp, color = Color.Gray) // הוקטן מ-14
 
-            // שורת כפתורים חדשה גם ל-Supply
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 4.dp)
+                    .padding(vertical = 2.dp) // הוקטן מ-4
             ) {
                 FilledIconButton(
                     onClick = onSupplyDecrease,
-                    modifier = Modifier.size(48.dp),
+                    modifier = Modifier.size(40.dp), // הוקטן מ-48
                     colors = IconButtonDefaults.filledIconButtonColors(containerColor = playerColor.copy(alpha = 0.1f))
                 ) {
                     Text("-", fontSize = 24.sp, color = playerColor, fontWeight = FontWeight.Bold)
@@ -234,13 +238,13 @@ fun PlayerCard(
 
                 Text(
                     text = "$supplyCurrent / $supplyMax",
-                    fontSize = 32.sp,
+                    fontSize = 28.sp, // הוקטן מ-32
                     fontWeight = FontWeight.Bold
                 )
 
                 FilledIconButton(
                     onClick = onSupplyIncrease,
-                    modifier = Modifier.size(48.dp),
+                    modifier = Modifier.size(40.dp), // הוקטן מ-48
                     colors = IconButtonDefaults.filledIconButtonColors(containerColor = playerColor.copy(alpha = 0.1f))
                 ) {
                     Text("+", fontSize = 24.sp, color = playerColor, fontWeight = FontWeight.Bold)
@@ -259,39 +263,34 @@ fun RoundCounter(
     modifier: Modifier = Modifier
 ){
     Card(
-        modifier = modifier.padding(8.dp),
+        modifier = modifier.padding(4.dp), // הוקטן מ-8
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
     ){
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier.padding(8.dp) // הוקטן מ-16
         ){
-            //כותרת המונה
-            Text(text = "ROUND", fontSize = 16.sp, color = Color.Gray)
-            //שורה שמכילה את הפלוס, המינוס והמספר
+            Text(text = "ROUND", fontSize = 14.sp, color = Color.Gray) // הוקטן מ-16
+
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center,
-                modifier = Modifier.padding(top = 8.dp)
+                modifier = Modifier.padding(top = 4.dp) // הוקטן מ-8
             ){
-                //כפתור המינוס
-                FilledIconButton(onClick = onRoundDecrease) {
-                    Text("-", fontWeight = FontWeight.Bold, fontSize = 20.sp)
+                FilledIconButton(onClick = onRoundDecrease, modifier = Modifier.size(36.dp)) { // הקטנו קצת כפתורים גם פה
+                    Text("-", fontWeight = FontWeight.Bold, fontSize = 18.sp)
                 }
-                //מספר הסיבוב הנוכחי
                 Text(
                     text = "$currentRound / $roundMax",
-                    fontSize = 32.sp,
+                    fontSize = 28.sp, // הוקטן מ-32
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(horizontal = 24.dp)
                 )
-                //כםתור פלוס
-                FilledIconButton(onClick = onRoundIncrease) {
-                    Text("+", fontWeight = FontWeight.Bold, fontSize = 20.sp)
+                FilledIconButton(onClick = onRoundIncrease, modifier = Modifier.size(36.dp)) {
+                    Text("+", fontWeight = FontWeight.Bold, fontSize = 18.sp)
                 }
             }
-
         }
     }
 }

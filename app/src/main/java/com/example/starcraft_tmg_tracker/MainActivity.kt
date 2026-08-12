@@ -13,7 +13,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -55,25 +54,24 @@ fun GameScreen(
     modifier: Modifier = Modifier
 ) {
     // 1. משתני הזיכרון (State) - שומרים את הנתונים של כל המשחק
-    var currentRound by remember {mutableStateOf(1)} //מתחילים מסיבוב 1
+    var currentRound by remember { mutableIntStateOf(1) } //מתחילים מסיבוב 1
 
     //נתונים של השחקן הכחול
-    var blueVp by remember {mutableStateOf(0)}
-    var blueSupply by remember { mutableStateOf(startingSupply) }
+    var blueVp by remember { mutableIntStateOf(0) }
+    var blueSupply by remember { mutableIntStateOf(startingSupply) }
 
     //נתונים של השחקן הכחול
-    var redVp by remember {mutableStateOf(0)}
-    var redSupply by remember { mutableStateOf(startingSupply) }
+    var redVp by remember { mutableIntStateOf(0) }
+    var redSupply by remember { mutableIntStateOf(startingSupply) }
 
     // המקסימום הרגיל המותר לאספקה
-    val normalMaxSupply = 15
-    val maxRound = totalRounds
+    var currentNormalMaxSupply by remember { mutableIntStateOf(startingSupply) }
 
     // בדיקה חכמה: האם אנחנו כרגע בסיבוב האחרון
-    val isLastRound = currentRound == maxRound
+    val isLastRound = currentRound == totalRounds
 
     //קובעים את המקסימום הנוכחי: אם סיבוב אחרון נשים מספר ענק כדי ש"לא תהיה הגבלה", אחרת 15
-    val currentMaxSupply = if (isLastRound) 999 else normalMaxSupply
+    val currentMaxSupply = if (isLastRound) 999 else currentNormalMaxSupply
 
     // 2. מבנה המסך הראשי - עמודה שמסדרת הכל מלמעלה למטה
     Column(
@@ -84,21 +82,28 @@ fun GameScreen(
         // 3. קריאה למונה הסיבובים שיצרנו (יופיע למעלה כי הוא ראשון בעמודה)
         RoundCounter(
             currentRound = currentRound,
-            roundMax = maxRound,
+            roundMax = totalRounds,
             onRoundIncrease = {
-                if(currentRound < maxRound){
+                if(currentRound < totalRounds){
                     currentRound++
+                    currentNormalMaxSupply += supplyIncrease
                     // מוסיפים לשני השחקנים את תוספת האספקה שהוגדרה מראש
                     blueSupply += supplyIncrease
                     redSupply += supplyIncrease
                 }
                 // מוודאים שהאספקה לא עוברת את המקסימום (בודקים כבר לפי הסיבוב החדש)
-                if (currentRound < maxRound) {
-                    if (blueSupply > normalMaxSupply) blueSupply = normalMaxSupply
-                    if (redSupply > normalMaxSupply) redSupply = normalMaxSupply
+                if (currentRound < totalRounds) {
+                    if (blueSupply > currentNormalMaxSupply) blueSupply = currentNormalMaxSupply
+                    if (redSupply > currentNormalMaxSupply) redSupply = currentNormalMaxSupply
                 }
                               },
-            onRoundDecrease = { if (currentRound > 1) currentRound-- }
+            onRoundDecrease = { if (currentRound > 1){
+                currentRound--
+                currentNormalMaxSupply -= supplyIncrease
+                blueSupply -= supplyIncrease
+                redSupply -= supplyIncrease
+            }
+            }
         )
         // 4. שורה שמחלקת את המסך לשניים - שחקן כחול מול שחקן אדום (יופיעו מתחת למונה)
         Row(
@@ -114,8 +119,8 @@ fun GameScreen(
                 onVpIncrease = { blueVp++ },
                 onVpDecrease = { if (blueVp > 0) blueVp-- },
                 supplyCurrent = blueSupply,
-                supplyMax = normalMaxSupply,
-                onSupplyIncrease = { if (blueSupply < normalMaxSupply) blueSupply++ },
+                supplyMax = currentMaxSupply,
+                onSupplyIncrease = { if (blueSupply < currentNormalMaxSupply) blueSupply++ },
                 onSupplyDecrease = { if (blueSupply > 0) blueSupply-- },
                 modifier = Modifier.weight(1f) //מחלק את המקום בשורה שווה בשווה
             )
@@ -127,8 +132,8 @@ fun GameScreen(
                 onVpIncrease = { redVp++ },
                 onVpDecrease = { if (redVp > 0) redVp-- },
                 supplyCurrent = redSupply,
-                supplyMax = normalMaxSupply,
-                onSupplyIncrease = { if (redSupply < normalMaxSupply) redSupply++ },
+                supplyMax = currentMaxSupply,
+                onSupplyIncrease = { if (redSupply < currentNormalMaxSupply) redSupply++ },
                 onSupplyDecrease = { if (redSupply > 0) redSupply-- },
                 modifier = Modifier.weight(1f) // לוקח בדיוק את אותו משקל (מקום) כמו הכחול
             )
@@ -334,9 +339,9 @@ fun SettingRow(
 @Composable
 fun SetupScreen(onStartGameClick: (totalRounds: Int, startingSupply: Int, supplyIncrease: Int) -> Unit){
     // 1. משתני הזיכרון (State) להגדרות ההתחלתיות (ברירת מחדל)
-    var rounds by remember { mutableStateOf(5) }
-    var startSupply by remember { mutableStateOf(3) }
-    var supplyIncrease by remember { mutableStateOf(1) }
+    var rounds by remember { mutableIntStateOf(5) }
+    var startSupply by remember { mutableIntStateOf(3) }
+    var supplyIncrease by remember { mutableIntStateOf(1) }
 
     // 2. סידור המסך בטור
     Column(
@@ -408,7 +413,7 @@ fun AppNavigation(modifier: Modifier = Modifier) {
     val navController = rememberNavController()
 
     // 2. מפת המסכים (NavHost) - מתחילים במסך ה-setup
-    NavHost(navController = navController, startDestination = "setup") {
+    NavHost(navController = navController, startDestination = "setup", modifier = modifier) {
         // --- תחנה ראשונה: מסך ההגדרות ---
         composable("setup") {
             SetupScreen(
@@ -450,19 +455,24 @@ fun AppNavigation(modifier: Modifier = Modifier) {
 // תצוגה מקדימה (Preview) - מאפשר לראות את העיצוב בלי להריץ על טלפון
 // ---------------------------------------------------------
 @Preview(showBackground = true, widthDp = 800, heightDp = 400) // הגדרנו רוחב גדול שמדמה Landscape
-/*@Composable
+@Composable
 fun GameScreenPreview() {
     StarcraftTMGTrackerTheme {
-        GameScreen()
+        // הוספתי נתוני דמה כדי שהתצוגה המקדימה תעבוד
+        GameScreen(
+            totalRounds = 5,
+            startingSupply = 3,
+            supplyIncrease = 1
+        )
     }
-}*/
+}
 
 @Preview(showBackground = true, widthDp = 360, heightDp = 640)
 @Composable
 fun SetupScreenPreview() {
-    StarcraftTMGTrackerTheme { // שים לב שזה ה-Theme הייחודי של הפרויקט שלך
+    StarcraftTMGTrackerTheme {
         SetupScreen(
-            onStartGameClick = { rounds, startSupply, supplyIncrease ->
+            onStartGameClick = { _, _, _ ->
                 // זוהי רק תצוגה מקדימה, אז אנחנו משאירים את הפעולה ריקה כרגע
             }
         )

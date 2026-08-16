@@ -1,6 +1,7 @@
 package com.example.starcraft_tmg_tracker
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -8,6 +9,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -16,8 +19,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.starcraft_tmg_tracker.ui.theme.StarcraftTMGTrackerTheme
 
 @Composable
@@ -25,6 +30,7 @@ fun GameScreen(
     totalRounds: Int,
     startingSupply: Int,
     supplyIncrease: Int,
+    onEndGameClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     // מפעילים את מניעת כיבוי המסך!
@@ -58,32 +64,46 @@ fun GameScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceEvenly // מרווח את האלמנטים בצורה שווה מלעלה למטה
     ) {
-        // 3. קריאה למונה הסיבובים שיצרנו (יופיע למעלה כי הוא ראשון בעמודה)
-        RoundCounter(
-            currentRound = currentRound,
-            roundMax = totalRounds,
-            onRoundIncrease = {
-                if(currentRound < totalRounds){
-                    currentRound++
-                    currentNormalMaxSupply += supplyIncrease
-                    // מוסיפים לשני השחקנים את תוספת האספקה שהוגדרה מראש
-                    blueSupply += supplyIncrease
-                    redSupply += supplyIncrease
-                }
-                // מוודאים שהאספקה לא עוברת את המקסימום (בודקים כבר לפי הסיבוב החדש)
-                if (currentRound < totalRounds) {
-                    if (blueSupply > currentNormalMaxSupply) blueSupply = currentNormalMaxSupply
-                    if (redSupply > currentNormalMaxSupply) redSupply = currentNormalMaxSupply
-                }
-            },
-            onRoundDecrease = { if (currentRound > 1){
-                currentRound--
-                currentNormalMaxSupply -= supplyIncrease
-                blueSupply -= supplyIncrease
-                redSupply -= supplyIncrease
+        Box(
+            modifier = Modifier.fillMaxWidth()
+        ){
+            // כפתור החזרה - מיושר לשמאל
+            TextButton(
+                onClick = onEndGameClick,
+                modifier = Modifier
+                    .align(Alignment.CenterStart)
+                    .padding(start = 50.dp)
+            ) {
+                Text("< BACK", fontSize = 18.sp, color = Color.Gray, fontWeight = FontWeight.Bold)
             }
-            }
-        )
+            // 3. קריאה למונה הסיבובים שיצרנו (יופיע למעלה כי הוא ראשון בעמודה)
+            RoundCounter(
+                currentRound = currentRound,
+                roundMax = totalRounds,
+                onRoundIncrease = {
+                    if(currentRound < totalRounds){
+                        currentRound++
+                        currentNormalMaxSupply += supplyIncrease
+                        // מוסיפים לשני השחקנים את תוספת האספקה שהוגדרה מראש
+                        blueSupply += supplyIncrease
+                        redSupply += supplyIncrease
+                    }
+                    // מוודאים שהאספקה לא עוברת את המקסימום (בודקים כבר לפי הסיבוב החדש)
+                    if (currentRound < totalRounds) {
+                        if (blueSupply > currentNormalMaxSupply) blueSupply = currentNormalMaxSupply
+                        if (redSupply > currentNormalMaxSupply) redSupply = currentNormalMaxSupply
+                    }
+                },
+                onRoundDecrease = { if (currentRound > 1){
+                    currentRound--
+                    currentNormalMaxSupply -= supplyIncrease
+                    blueSupply -= supplyIncrease
+                    redSupply -= supplyIncrease
+                }
+                },
+                modifier = Modifier.align(Alignment.Center)
+            )
+        }
         // 4. שורה שמחלקת את המסך לשניים - שחקן כחול מול שחקן אדום (יופיעו מתחת למונה)
         Row(
             modifier = modifier.fillMaxWidth(),
@@ -128,7 +148,8 @@ fun GameScreenPreview() {
         GameScreen(
             totalRounds = 5,
             startingSupply = 3,
-            supplyIncrease = 1
+            supplyIncrease = 1,
+            onEndGameClick = {}
         )
     }
 }

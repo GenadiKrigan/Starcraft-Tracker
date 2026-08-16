@@ -70,7 +70,10 @@ fun AppNavigation(modifier: Modifier = Modifier) {
             GameScreen(
                 totalRounds = rounds,
                 startingSupply = startSupply,
-                supplyIncrease = supplyIncrease
+                supplyIncrease = supplyIncrease,
+                onEndGameClick = {
+                    navController.popBackStack("setup", inclusive = false)
+                }
             )
         }
     }

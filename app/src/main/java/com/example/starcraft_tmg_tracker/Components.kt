@@ -1,6 +1,7 @@
 package com.example.starcraft_tmg_tracker
 
 import android.app.Activity
+import android.view.WindowManager
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -193,6 +194,25 @@ fun LockScreenOrientation(orientation: Int) {
         // 4. מה קורה כשיוצאים מהמסך? (onDispose) - מחזירים את המצב לקדמותו
         onDispose {
             activity.requestedOrientation = originalOrientation
+        }
+    }
+}
+
+@Composable
+fun KeepScreenOn() {
+    val context = LocalContext.current
+
+    // DisposableEffect פועל ברגע שהמסך עולה, ומפעיל את onDispose כשהמסך נסגר
+    DisposableEffect(Unit) {
+        val activity = context as? Activity
+        val window = activity?.window
+
+        // מדליק את "מונע השינה" של המסך
+        window?.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+
+        // כשהמסך הזה ייסגר (נחזור להגדרות), נכבה את מונע השינה כדי לא לגמור למשתמש את הסוללה
+        onDispose {
+            window?.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         }
     }
 }

@@ -27,6 +27,8 @@ fun GameScreen(
     supplyIncrease: Int,
     modifier: Modifier = Modifier
 ) {
+    // מפעילים את מניעת כיבוי המסך!
+    KeepScreenOn()
     // 1. משתני הזיכרון (State) - שומרים את הנתונים של כל המשחק
     var currentRound by remember { mutableIntStateOf(1) } //מתחילים מסיבוב 1
 

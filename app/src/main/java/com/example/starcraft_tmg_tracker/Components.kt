@@ -117,11 +117,21 @@ fun PlayerCard(
                     Text("-", fontSize = 24.sp, color = playerColor, fontWeight = FontWeight.Bold)
                 }
 
-                Text(
-                    text = "$supplyCurrent / $supplyMax",
-                    fontSize = 28.sp, // הוקטן מ-32
-                    fontWeight = FontWeight.Bold
-                )
+                if (supplyMax == 999) {
+                    // תצוגה לסיבוב האחרון!
+                    Text(
+                        text = "POWER OVERWHELMING",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 16.sp, // שמתי גודל קטן יותר כדי שהמשפט הארוך ייכנס לכרטיסייה
+                        color = playerColor // צובע את הטקסט בצבע של השחקן לאפקט מגניב!
+                    )
+                } else {
+                    Text(
+                        text = "$supplyCurrent / $supplyMax",
+                        fontSize = 28.sp, // הוקטן מ-32
+                        fontWeight = FontWeight.Bold
+                    )
+                }
 
                 FilledIconButton(
                     onClick = onSupplyIncrease,

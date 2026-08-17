@@ -14,6 +14,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import android.content.pm.ActivityInfo
+import androidx.compose.ui.platform.LocalContext
 import com.example.starcraft_tmg_tracker.ui.theme.StarcraftTMGTrackerTheme
 
 class MainActivity : ComponentActivity() {
@@ -34,46 +35,66 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun AppNavigation(modifier: Modifier = Modifier) {
-    // 1. יצירת ה"נווט" שזוכר באיזה מסך אנחנו נמצאים
     val navController = rememberNavController()
+    val context = LocalContext.current // הבאנו את ה-context כדי שנוכל למחוק את המשחק השמור
 
-    // 2. מפת המסכים (NavHost) - מתחילים במסך ה-setup
-    NavHost(navController = navController, startDestination = "setup", modifier = modifier) {
-        // --- תחנה ראשונה: מסך ההגדרות ---
-        composable("setup") {
-            SetupScreen(
-                onStartGameClick = { rounds, startSupply, supplyIncrease ->
-                    // כשהשחקן לוחץ התחל, אנחנו מנווטים למסך המשחק ומעבירים לו את המספרים בתוך הקישור
-                    navController.navigate("game/$rounds/$startSupply/$supplyIncrease")
+    // שינוי: ה-startDestination הוא עכשיו מסך הפתיחה
+    NavHost(navController = navController, startDestination = "start", modifier = modifier) {
+
+        // --- תחנה 1: מסך הבית (החדש) ---
+        composable("start") {
+            StartScreen(
+                onNewGameClick = {
+                    // כפתור משחק חדש: מוחקים את השמירה הישנה מהפנקס, ועוברים להגדרות!
+                    GameStorage.clearGame(context)
+                    navController.navigate("setup")
+                },
+                onResumeGameClick = {
+                    // כפתור המשך משחק: מדלגים על ההגדרות והולכים ישר למשחק
+                    navController.navigate("game/resume")
                 }
             )
         }
 
-        // --- תחנה שנייה: מסך המשחק הראשי ---
+        // --- תחנה 2: מסך ההגדרות ---
+        composable("setup") {
+            SetupScreen(
+                onStartGameClick = { rounds, startSupply, supplyIncrease ->
+                    // הוספנו את המילה 'new' לכתובת
+                    navController.navigate("game/new/$rounds/$startSupply/$supplyIncrease")
+                }
+            )
+        }
+
+        // --- תחנה 3: המשך משחק קיים (Resume) ---
+        composable("game/resume") {
+            LockScreenOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE)
+            GameScreen(
+                isResume = true, // זה אומר למסך המשחק למשוך את הנתונים מהזיכרון
+                onEndGameClick = { navController.popBackStack("start", inclusive = false) }
+            )
+        }
+
+        // --- תחנה 4: התחלת משחק חדש (לאחר ההגדרות) ---
         composable(
-            route = "game/{rounds}/{startSupply}/{supplyIncrease}",
+            route = "game/new/{rounds}/{startSupply}/{supplyIncrease}",
             arguments = listOf(
                 navArgument("rounds") { type = NavType.IntType },
                 navArgument("startSupply") { type = NavType.IntType },
                 navArgument("supplyIncrease") { type = NavType.IntType }
             )
-        ){ backStackEntry ->
-            // חילוץ המספרים שהעברנו מהמסך הקודם
+        ) { backStackEntry ->
             val rounds = backStackEntry.arguments?.getInt("rounds") ?: 5
             val startSupply = backStackEntry.arguments?.getInt("startSupply") ?: 3
             val supplyIncrease = backStackEntry.arguments?.getInt("supplyIncrease") ?: 1
 
-            // כאן קורה הקסם: נועלים את המסך לרוחב רק כשאנחנו בתוך מסך המשחק!
             LockScreenOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE)
-
-            // הפעלת מסך המשחק עם הנתונים החדשים
             GameScreen(
                 totalRounds = rounds,
                 startingSupply = startSupply,
                 supplyIncrease = supplyIncrease,
-                onEndGameClick = {
-                    navController.popBackStack("setup", inclusive = false)
-                }
+                isResume = false, // אנחנו מתחילים מאפס, לא מהזיכרון
+                onEndGameClick = { navController.popBackStack("start", inclusive = false) }
             )
         }
     }

@@ -12,6 +12,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
@@ -19,6 +20,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -27,42 +29,66 @@ import com.example.starcraft_tmg_tracker.ui.theme.StarcraftTMGTrackerTheme
 
 @Composable
 fun GameScreen(
-    totalRounds: Int,
-    startingSupply: Int,
-    supplyIncrease: Int,
     onEndGameClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    totalRounds: Int = 5,
+    startingSupply: Int = 3,
+    supplyIncrease: Int = 1,
+    isResume: Boolean = false,
 ) {
+    val context = LocalContext.current
+
+    // 1. שואבים את נתוני המשחק מהפנקס שלנו (רק אם אנחנו במצב 'המשך משחק')
+    val savedState = remember { if (isResume) GameStorage.loadGame(context) else null }
+
+    // 2. הגדרת המשתנים - עכשיו הם שואלים: "יש שמירה? ניקח ממנה! אין שמירה? נתחיל מחדש!"
+    var currentRound by remember { mutableIntStateOf(savedState?.currentRound ?: 1) }
+
+    var blueVp by remember { mutableIntStateOf(savedState?.blueVp ?: 0) }
+    var blueSupply by remember { mutableIntStateOf(savedState?.blueSupply ?: startingSupply) }
+
+    var redVp by remember { mutableIntStateOf(savedState?.redVp ?: 0) }
+    var redSupply by remember { mutableIntStateOf(savedState?.redSupply ?: startingSupply) }
+
+    var currentNormalMaxSupply by remember { mutableIntStateOf(savedState?.currentNormalMaxSupply ?: startingSupply) }
+
+    // 3. חוקי המשחק הבסיסיים (לוקחים מהשמירה אם קיימת)
+    val activeTotalRounds = savedState?.totalRounds ?: totalRounds
+    val activeSupplyIncrease = savedState?.supplyIncrease ?: supplyIncrease
+    val activeStartingSupply = savedState?.startingSupply ?: startingSupply
+
+    val isLastRound = currentRound == activeTotalRounds
+    val currentMaxSupply = if (isLastRound) 999 else currentNormalMaxSupply
+
+    // 4. הקסם: שמירה אוטומטית!
+    LaunchedEffect(currentRound, blueVp, blueSupply, redVp, redSupply, currentNormalMaxSupply) {
+        GameStorage.saveGame(
+            context = context,
+            totalRounds = activeTotalRounds,
+            currentRound = currentRound,
+            startingSupply = activeStartingSupply,
+            supplyIncrease = activeSupplyIncrease,
+            currentNormalMaxSupply = currentNormalMaxSupply,
+            blueVp = blueVp,
+            blueSupply = blueSupply,
+            redVp = redVp,
+            redSupply = redSupply
+        )
+    }
+
     // מפעילים את מניעת כיבוי המסך!
     KeepScreenOn()
-    // 1. משתני הזיכרון (State) - שומרים את הנתונים של כל המשחק
-    var currentRound by remember { mutableIntStateOf(1) } //מתחילים מסיבוב 1
 
-    //נתונים של השחקן הכחול
-    var blueVp by remember { mutableIntStateOf(0) }
-    var blueSupply by remember { mutableIntStateOf(startingSupply) }
-
-    //נתונים של השחקן הכחול
-    var redVp by remember { mutableIntStateOf(0) }
-    var redSupply by remember { mutableIntStateOf(startingSupply) }
-
-    // המקסימום הרגיל המותר לאספקה
-    var currentNormalMaxSupply by remember { mutableIntStateOf(startingSupply) }
-
-    // בדיקה חכמה: האם אנחנו כרגע בסיבוב האחרון
-    val isLastRound = currentRound == totalRounds
-
-    //קובעים את המקסימום הנוכחי: אם סיבוב אחרון נשים מספר ענק כדי ש"לא תהיה הגבלה", אחרת 15
-    val currentMaxSupply = if (isLastRound) 999 else currentNormalMaxSupply
+    // (המשתנים הישנים והכפולים שהיו כאן - נמחקו!)
 
     // 2. מבנה המסך הראשי - עמודה שמסדרת הכל מלמעלה למטה
     Column(
         modifier = modifier
             .fillMaxSize()
             .padding(8.dp)
-            .verticalScroll(rememberScrollState()), // <--- הוספנו את רשת הביטחון כאן!
+            .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.SpaceEvenly // מרווח את האלמנטים בצורה שווה מלעלה למטה
+        verticalArrangement = Arrangement.SpaceEvenly
     ) {
         Box(
             modifier = Modifier.fillMaxWidth()
@@ -76,30 +102,29 @@ fun GameScreen(
             ) {
                 Text("< BACK", fontSize = 18.sp, color = Color.Gray, fontWeight = FontWeight.Bold)
             }
-            // 3. קריאה למונה הסיבובים שיצרנו (יופיע למעלה כי הוא ראשון בעמודה)
+            // 3. קריאה למונה הסיבובים
             RoundCounter(
                 currentRound = currentRound,
-                roundMax = totalRounds,
+                roundMax = activeTotalRounds, // <--- תוקן ל-activeTotalRounds
                 onRoundIncrease = {
-                    if(currentRound < totalRounds){
+                    if(currentRound < activeTotalRounds){ // <--- תוקן ל-activeTotalRounds
                         currentRound++
-                        currentNormalMaxSupply += supplyIncrease
-                        // מוסיפים לשני השחקנים את תוספת האספקה שהוגדרה מראש
-                        blueSupply += supplyIncrease
-                        redSupply += supplyIncrease
+                        currentNormalMaxSupply += activeSupplyIncrease // <--- תוקן ל-active
+                        blueSupply += activeSupplyIncrease
+                        redSupply += activeSupplyIncrease
                     }
-                    // מוודאים שהאספקה לא עוברת את המקסימום (בודקים כבר לפי הסיבוב החדש)
-                    if (currentRound < totalRounds) {
+                    if (currentRound < activeTotalRounds) {
                         if (blueSupply > currentNormalMaxSupply) blueSupply = currentNormalMaxSupply
                         if (redSupply > currentNormalMaxSupply) redSupply = currentNormalMaxSupply
                     }
                 },
-                onRoundDecrease = { if (currentRound > 1){
-                    currentRound--
-                    currentNormalMaxSupply -= supplyIncrease
-                    blueSupply -= supplyIncrease
-                    redSupply -= supplyIncrease
-                }
+                onRoundDecrease = {
+                    if (currentRound > 1){
+                        currentRound--
+                        currentNormalMaxSupply -= activeSupplyIncrease // <--- תוקן ל-active
+                        blueSupply -= activeSupplyIncrease
+                        redSupply -= activeSupplyIncrease
+                    }
                 },
                 modifier = Modifier.align(Alignment.Center)
             )
@@ -145,11 +170,7 @@ fun GameScreen(
 fun GameScreenPreview() {
     StarcraftTMGTrackerTheme {
         // הוספתי נתוני דמה כדי שהתצוגה המקדימה תעבוד
-        GameScreen(
-            totalRounds = 5,
-            startingSupply = 3,
-            supplyIncrease = 1,
-            onEndGameClick = {}
+        GameScreen(onEndGameClick = {}
         )
     }
 }

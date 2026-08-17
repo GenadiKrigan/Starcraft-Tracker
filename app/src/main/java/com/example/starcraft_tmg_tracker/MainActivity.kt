@@ -14,6 +14,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import android.content.pm.ActivityInfo
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import com.example.starcraft_tmg_tracker.ui.theme.StarcraftTMGTrackerTheme
 
@@ -24,7 +25,10 @@ class MainActivity : ComponentActivity() {
         setContent {
             // שימוש ב-Theme הייחודי של הפרויקט שלך
             StarcraftTMGTrackerTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+                Scaffold(
+                    modifier = Modifier.fillMaxSize(),
+                    containerColor = Color.Black
+                ) { innerPadding ->
                     // קוראים למערכת הניווט במקום למסך בודד
                     AppNavigation(modifier = Modifier.padding(innerPadding))
                 }

@@ -19,6 +19,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -43,6 +44,7 @@ fun SettingRow(
         Text(text = label,
             fontSize = 18.sp,
             fontWeight = FontWeight.Medium,
+            color = Color.White,
             modifier = Modifier.weight(1f).padding(end = 8.dp)
         )
 
@@ -54,6 +56,7 @@ fun SettingRow(
             Text(
                 text = "$value",
                 fontSize = 24.sp,
+                color = Color.White,
                 modifier = Modifier.padding(horizontal = 24.dp)
             )
             FilledIconButton(onClick = onIncrease, modifier = Modifier.size(40.dp)) {

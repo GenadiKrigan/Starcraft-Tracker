@@ -53,8 +53,11 @@ fun SettingRow(
 
         // Control buttons and value display
         Row(verticalAlignment = Alignment.CenterVertically){
-            FilledIconButton(onClick = onDecrease, modifier = Modifier.size(40.dp)) {
-                Text("-", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+            FilledIconButton(
+                onClick = onDecrease,
+                enabled = value > 1,
+                modifier = Modifier.size(40.dp)) {
+                Text("-", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = if(value > 1)Color.Black else Color.Gray)
             }
             Text(
                 text = "$value",

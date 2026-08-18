@@ -39,4 +39,9 @@ Customize every match to yours preferences:
 Feel free to fork this project and submit Pull Requests if you have ideas for new features or improvements for the Starcraft TMG community!
 
 ---
+
+## Disclaimer
+This is an unofficial, fan-made companion app for the Starcraft Tabletop Miniatures Game. It is not affiliated with, endorsed, or sponsored by Blizzard Entertainment.
+
+---
 *GLHF! May your supply never block your victory.*

@@ -21,15 +21,15 @@ import com.example.starcraft_tmg_tracker.ui.theme.StarcraftTMGTrackerTheme
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge() // מאפשר לאפליקציה למלא את כל המסך
+        enableEdgeToEdge() // Enables edge-to-edge display
         setContent {
-            // שימוש ב-Theme הייחודי של הפרויקט שלך
+            // Using the project's custom theme
             StarcraftTMGTrackerTheme {
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
                     containerColor = Color.Black
                 ) { innerPadding ->
-                    // קוראים למערכת הניווט במקום למסך בודד
+                    // Use the navigation system instead of a single screen
                     AppNavigation(modifier = Modifier.padding(innerPadding))
                 }
             }
@@ -40,46 +40,44 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun AppNavigation(modifier: Modifier = Modifier) {
     val navController = rememberNavController()
-    val context = LocalContext.current // הבאנו את ה-context כדי שנוכל למחוק את המשחק השמור
+    val context = LocalContext.current // Get context to allow clearing the saved game
 
-    // שינוי: ה-startDestination הוא עכשיו מסך הפתיחה
     NavHost(navController = navController, startDestination = "start", modifier = modifier) {
 
-        // --- תחנה 1: מסך הבית (החדש) ---
+        // --- 1: Home Screen ---
         composable("start") {
             StartScreen(
                 onNewGameClick = {
-                    // כפתור משחק חדש: מוחקים את השמירה הישנה מהפנקס, ועוברים להגדרות!
+                    // New game button: Clear old save and navigate to setup
                     GameStorage.clearGame(context)
                     navController.navigate("setup")
                 },
                 onResumeGameClick = {
-                    // כפתור המשך משחק: מדלגים על ההגדרות והולכים ישר למשחק
+                    // Resume game button: Skip setup and go straight to game
                     navController.navigate("game/resume")
                 }
             )
         }
 
-        // --- תחנה 2: מסך ההגדרות ---
+        // --- 2: Setup Screen ---
         composable("setup") {
             SetupScreen(
                 onStartGameClick = { rounds, startSupply, supplyIncrease ->
-                    // הוספנו את המילה 'new' לכתובת
                     navController.navigate("game/new/$rounds/$startSupply/$supplyIncrease")
                 }
             )
         }
 
-        // --- תחנה 3: המשך משחק קיים (Resume) ---
+        // --- 3: Resume Existing Game ---
         composable("game/resume") {
             LockScreenOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE)
             GameScreen(
-                isResume = true, // זה אומר למסך המשחק למשוך את הנתונים מהזיכרון
+                isResume = true, // Tell GameScreen to load data from storage
                 onEndGameClick = { navController.popBackStack("start", inclusive = false) }
             )
         }
 
-        // --- תחנה 4: התחלת משחק חדש (לאחר ההגדרות) ---
+        // --- 4: Start New Game (After Setup) ---
         composable(
             route = "game/new/{rounds}/{startSupply}/{supplyIncrease}",
             arguments = listOf(
@@ -97,7 +95,7 @@ fun AppNavigation(modifier: Modifier = Modifier) {
                 totalRounds = rounds,
                 startingSupply = startSupply,
                 supplyIncrease = supplyIncrease,
-                isResume = false, // אנחנו מתחילים מאפס, לא מהזיכרון
+                isResume = false, // Starting a fresh game
                 onEndGameClick = { navController.popBackStack("start", inclusive = false) }
             )
         }

@@ -9,6 +9,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Text
@@ -26,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.starcraft_tmg_tracker.ui.theme.StarcraftTMGTrackerTheme
 
+
 @Composable
 fun SettingRow(
     label: String,
@@ -37,10 +40,10 @@ fun SettingRow(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
         modifier = Modifier
-            .fillMaxWidth(0.9f) // תופס 90% מרוחב המסך
+            .fillMaxWidth(0.9f)
             .padding(vertical = 8.dp)
     ){
-        //שם ההגדרה (למשל: "Total Rounds")
+        // Setting label (e.g., "Total Rounds")
         Text(text = label,
             fontSize = 18.sp,
             fontWeight = FontWeight.Medium,
@@ -48,7 +51,7 @@ fun SettingRow(
             modifier = Modifier.weight(1f).padding(end = 8.dp)
         )
 
-        //אזור הכפתורים והמספר
+        // Control buttons and value display
         Row(verticalAlignment = Alignment.CenterVertically){
             FilledIconButton(onClick = onDecrease, modifier = Modifier.size(40.dp)) {
                 Text("-", fontSize = 20.sp, fontWeight = FontWeight.Bold)
@@ -66,24 +69,26 @@ fun SettingRow(
     }
 }
 
-// המסך המלא של ההגדרות
+// Full setup screen
 @Composable
 fun SetupScreen(onStartGameClick: (totalRounds: Int, startingSupply: Int, supplyIncrease: Int) -> Unit){
-    // 1. משתני הזיכרון (State) להגדרות ההתחלתיות (ברירת מחדל)
+    // Initial settings state with default values
     var rounds by remember { mutableIntStateOf(5) }
     var startSupply by remember { mutableIntStateOf(3) }
     var supplyIncrease by remember { mutableIntStateOf(1) }
 
-    // 2. סידור המסך בטור
+    // Screen layout arranged in a column
     Column(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Text("GAME SETUP", fontSize = 32.sp, fontWeight = FontWeight.Bold)
+        Text("GAME SETUP", fontSize = 32.sp, fontWeight = FontWeight.Bold, color = Color.White)
         Spacer(modifier = Modifier.height(32.dp))
 
-        // 3. שימוש באבן הבניין שלנו 3 פעמים
+        // Reusable setting rows
         SettingRow(
             label = "Total Rounds",
             value = rounds,
@@ -106,7 +111,7 @@ fun SetupScreen(onStartGameClick: (totalRounds: Int, startingSupply: Int, supply
         )
         Spacer(modifier = Modifier.height(32.dp))
 
-        // 4. כפתור התחלת המשחק
+        // Start Game button
         Button(
             onClick = { onStartGameClick(rounds, startSupply, supplyIncrease) },
             modifier = Modifier.padding(16.dp)
@@ -122,7 +127,6 @@ fun SetupScreenPreview() {
     StarcraftTMGTrackerTheme {
         SetupScreen(
             onStartGameClick = { _, _, _ ->
-                // זוהי רק תצוגה מקדימה, אז אנחנו משאירים את הפעולה ריקה כרגע
             }
         )
     }

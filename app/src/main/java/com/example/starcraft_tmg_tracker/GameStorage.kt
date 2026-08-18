@@ -3,7 +3,7 @@ package com.example.starcraft_tmg_tracker
 import android.content.Context
 import androidx.core.content.edit
 
-// 1. "חבילת נתונים": מחלקה שנועדה לארוז את כל נתוני המשחק כדי שיהיה נוח להעביר אותם
+// Data class to store all game state information
 data class SavedGameState(
     val totalRounds: Int,
     val currentRound: Int,
@@ -16,18 +16,18 @@ data class SavedGameState(
     val redSupply: Int
 )
 
-// 2. אובייקט (מחלקה מיוחדת שקיימת פעם אחת) שמנהל את הגישה לזיכרון
+// Singleton to manage game data persistence
 object GameStorage {
-    // השם של "הפנקס" שלנו בזיכרון של הטלפון
+    // Storage key for SharedPreferences
     private const val PREFS_NAME = "StarcraftGameMemory"
 
-    // פונקציה א': בודקת האם בכלל קיים משחק שמור בפנקס
+    // Checks if a saved game exists
     fun hasGameSaved(context: Context): Boolean {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         return prefs.getBoolean("hasSavedGame", false)
     }
 
-    // פונקציה ב': כותבת את כל הנתונים העדכניים לתוך הפנקס
+    // Writes the current game state to storage
     fun saveGame(
         context: Context,
         totalRounds: Int, currentRound: Int,
@@ -36,9 +36,9 @@ object GameStorage {
         redVp: Int, redSupply: Int
     ){
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        // משתמשים ב-edit כדי לפתוח את הפנקס לכתיבה
+        // Open storage for editing
         prefs.edit().apply {
-            putBoolean("hasSavedGame", true) // מסמנים שיש משחק שמור
+            putBoolean("hasSavedGame", true) // Mark that a game is saved
             putInt("totalRounds", totalRounds)
             putInt("currentRound", currentRound)
             putInt("startingSupply", startingSupply)
@@ -48,15 +48,15 @@ object GameStorage {
             putInt("blueSupply", blueSupply)
             putInt("redVp", redVp)
             putInt("redSupply", redSupply)
-            apply() // שומר את הנתונים ברקע וסוגר את הפנקס
+            apply() // Save data asynchronously
         }
     }
 
-    // פונקציה ג': קוראת את הנתונים מהפנקס ומחזירה אותם ארוזים ב"חבילה"
+    // Reads the game state from storage
     fun loadGame(context: Context): SavedGameState {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         return SavedGameState(
-            // המספר השני (למשל 5) הוא ערך ברירת מחדל למקרה שאין כלום בזיכרון
+            // Defaults used if storage is empty
             totalRounds = prefs.getInt("totalRounds", 5),
             currentRound = prefs.getInt("currentRound", 1),
             startingSupply = prefs.getInt("startingSupply", 3),
@@ -69,7 +69,7 @@ object GameStorage {
         )
     }
 
-    // פונקציה ד': קורעת את הדפים מהפנקס (מחיקת המשחק הנוכחי)
+    // Clears the current game data from storage
     fun clearGame(context: Context) {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         prefs.edit { clear() }

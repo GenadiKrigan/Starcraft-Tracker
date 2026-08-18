@@ -38,10 +38,10 @@ fun GameScreen(
 ) {
     val context = LocalContext.current
 
-    // 1. שואבים את נתוני המשחק מהפנקס שלנו (רק אם אנחנו במצב 'המשך משחק')
+    // Load game data if resuming
     val savedState = remember { if (isResume) GameStorage.loadGame(context) else null }
 
-    // 2. הגדרת המשתנים - עכשיו הם שואלים: "יש שמירה? ניקח ממנה! אין שמירה? נתחיל מחדש!"
+    // Initialize state from save or defaults
     var currentRound by remember { mutableIntStateOf(savedState?.currentRound ?: 1) }
 
     var blueVp by remember { mutableIntStateOf(savedState?.blueVp ?: 0) }
@@ -52,7 +52,7 @@ fun GameScreen(
 
     var currentNormalMaxSupply by remember { mutableIntStateOf(savedState?.currentNormalMaxSupply ?: startingSupply) }
 
-    // 3. חוקי המשחק הבסיסיים (לוקחים מהשמירה אם קיימת)
+    // Game rules from save or parameters
     val activeTotalRounds = savedState?.totalRounds ?: totalRounds
     val activeSupplyIncrease = savedState?.supplyIncrease ?: supplyIncrease
     val activeStartingSupply = savedState?.startingSupply ?: startingSupply
@@ -60,7 +60,7 @@ fun GameScreen(
     val isLastRound = currentRound == activeTotalRounds
     val currentMaxSupply = if (isLastRound) 999 else currentNormalMaxSupply
 
-    // 4. הקסם: שמירה אוטומטית!
+    // Auto-save game state on changes
     LaunchedEffect(currentRound, blueVp, blueSupply, redVp, redSupply, currentNormalMaxSupply) {
         GameStorage.saveGame(
             context = context,
@@ -76,12 +76,9 @@ fun GameScreen(
         )
     }
 
-    // מפעילים את מניעת כיבוי המסך!
+    // Prevent the screen from turning off during gameplay
     KeepScreenOn()
 
-    // (המשתנים הישנים והכפולים שהיו כאן - נמחקו!)
-
-    // 2. מבנה המסך הראשי - עמודה שמסדרת הכל מלמעלה למטה
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -93,7 +90,7 @@ fun GameScreen(
         Box(
             modifier = Modifier.fillMaxWidth()
         ){
-            // כפתור החזרה - מיושר לשמאל
+            // Back button
             TextButton(
                 onClick = onEndGameClick,
                 modifier = Modifier
@@ -102,14 +99,14 @@ fun GameScreen(
             ) {
                 Text("< BACK", fontSize = 18.sp, color = Color.Gray, fontWeight = FontWeight.Bold)
             }
-            // 3. קריאה למונה הסיבובים
+            // Round counter
             RoundCounter(
                 currentRound = currentRound,
-                roundMax = activeTotalRounds, // <--- תוקן ל-activeTotalRounds
+                roundMax = activeTotalRounds,
                 onRoundIncrease = {
-                    if(currentRound < activeTotalRounds){ // <--- תוקן ל-activeTotalRounds
+                    if(currentRound < activeTotalRounds){
                         currentRound++
-                        currentNormalMaxSupply += activeSupplyIncrease // <--- תוקן ל-active
+                        currentNormalMaxSupply += activeSupplyIncrease
                         blueSupply += activeSupplyIncrease
                         redSupply += activeSupplyIncrease
                     }
@@ -121,7 +118,7 @@ fun GameScreen(
                 onRoundDecrease = {
                     if (currentRound > 1){
                         currentRound--
-                        currentNormalMaxSupply -= activeSupplyIncrease // <--- תוקן ל-active
+                        currentNormalMaxSupply -= activeSupplyIncrease
                         blueSupply -= activeSupplyIncrease
                         redSupply -= activeSupplyIncrease
                     }
@@ -129,16 +126,16 @@ fun GameScreen(
                 modifier = Modifier.align(Alignment.Center)
             )
         }
-        // 4. שורה שמחלקת את המסך לשניים - שחקן כחול מול שחקן אדום (יופיעו מתחת למונה)
+        // Player cards row
         Row(
             modifier = modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically
         ){
-            // 5 א. קריאה לכרטיס של השחקן הכחול
+            // Blue Player card
             PlayerCard(
                 playerName = "Blue Player",
-                playerColor = Color(0xFF2196F3), // קוד צבע כחול
+                playerColor = Color(0xFF2196F3),
                 vpValue = blueVp,
                 onVpIncrease = { blueVp++ },
                 onVpDecrease = { if (blueVp > 0) blueVp-- },
@@ -146,12 +143,12 @@ fun GameScreen(
                 supplyMax = currentMaxSupply,
                 onSupplyIncrease = { if (blueSupply < currentNormalMaxSupply) blueSupply++ },
                 onSupplyDecrease = { if (blueSupply > 0) blueSupply-- },
-                modifier = Modifier.weight(1f) //מחלק את המקום בשורה שווה בשווה
+                modifier = Modifier.weight(1f)
             )
-            // 5ב. קריאה לכרטיס של השחקן האדום (ממש ליד הכחול)
+            // Red Player card
             PlayerCard(
                 playerName = "Red Player",
-                playerColor = Color(0xFFE53935), // קוד צבע אדום
+                playerColor = Color(0xFFE53935),
                 vpValue = redVp,
                 onVpIncrease = { redVp++ },
                 onVpDecrease = { if (redVp > 0) redVp-- },
@@ -159,17 +156,16 @@ fun GameScreen(
                 supplyMax = currentMaxSupply,
                 onSupplyIncrease = { if (redSupply < currentNormalMaxSupply) redSupply++ },
                 onSupplyDecrease = { if (redSupply > 0) redSupply-- },
-                modifier = Modifier.weight(1f) // לוקח בדיוק את אותו משקל (מקום) כמו הכחול
+                modifier = Modifier.weight(1f)
             )
         }
     }
 }
 
-@Preview(showBackground = true, widthDp = 800, heightDp = 400) // הגדרנו רוחב גדול שמדמה Landscape
+@Preview(showBackground = true, widthDp = 800, heightDp = 400)
 @Composable
 fun GameScreenPreview() {
     StarcraftTMGTrackerTheme {
-        // הוספתי נתוני דמה כדי שהתצוגה המקדימה תעבוד
         GameScreen(onEndGameClick = {}
         )
     }

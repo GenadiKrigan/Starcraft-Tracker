@@ -17,10 +17,10 @@ fun StartScreen(
     onNewGameClick: () -> Unit,
     onResumeGameClick: () -> Unit
 ) {
-    // משיגים את הגישה לטלפון כדי שנוכל לקרוא מהזיכרון
+    // Get Context to access storage
     val context = LocalContext.current
 
-    // בודקים אם יש משחק שמור - פעולה זו קורית פעם אחת כשהמסך עולה
+    // Check for a saved game only once when the screen loads
     val hasSavedGame = remember { GameStorage.hasGameSaved(context) }
 
     Column(
@@ -28,7 +28,7 @@ fun StartScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        // כותרת האפליקציה
+        // App Title
         Text(
             text = "StarCraft",
             fontSize = 40.sp,
@@ -43,7 +43,7 @@ fun StartScreen(
 
         Spacer(modifier = Modifier.height(48.dp))
 
-        // כפתור משחק חדש
+        // New Game button
         Button(
             onClick = onNewGameClick,
             modifier = Modifier
@@ -53,7 +53,7 @@ fun StartScreen(
             Text(text = "New Game", fontSize = 18.sp, modifier = Modifier.padding(8.dp))
         }
 
-        // כפתור המשך משחק
+        // Resume Game button
         FilledTonalButton(
             onClick = onResumeGameClick,
             enabled = hasSavedGame,
@@ -66,7 +66,6 @@ fun StartScreen(
     }
 }
 
-// תצוגה מקדימה - כדי שנוכל לראות את העיצוב בלי להריץ
 @Preview(showBackground = true, widthDp = 360, heightDp = 640)
 @Composable
 fun StartScreenPreview() {

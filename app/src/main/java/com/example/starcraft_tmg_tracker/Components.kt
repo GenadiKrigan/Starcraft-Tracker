@@ -19,6 +19,10 @@ import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -78,9 +82,10 @@ fun PlayerCard(
                 FilledIconButton(
                     onClick = onVpDecrease,
                     modifier = Modifier.size(40.dp),
+                    enabled = vpValue > 0,
                     colors = IconButtonDefaults.filledIconButtonColors(containerColor = playerColor.copy(alpha = 0.1f))
                 ) {
-                    Text("-", fontSize = 24.sp, color = playerColor, fontWeight = FontWeight.Bold)
+                    Text("-", fontSize = 24.sp, color = if(vpValue > 0) playerColor else Color.Gray, fontWeight = FontWeight.Bold)
                 }
 
                 Text(
@@ -110,22 +115,32 @@ fun PlayerCard(
                     .fillMaxWidth()
                     .padding(vertical = 2.dp)
             ) {
+                val isMinusEnabled = supplyCurrent > 0 && supplyMax != 999
+
                 FilledIconButton(
                     onClick = onSupplyDecrease,
                     modifier = Modifier.size(40.dp),
+                    enabled = isMinusEnabled,
                     colors = IconButtonDefaults.filledIconButtonColors(containerColor = playerColor.copy(alpha = 0.1f))
                 ) {
-                    Text("-", fontSize = 24.sp, color = playerColor, fontWeight = FontWeight.Bold)
+                    Text("-", fontSize = 24.sp, color = if(isMinusEnabled) playerColor else Color.Gray, fontWeight = FontWeight.Bold)
                 }
 
+                var textSize by remember { mutableStateOf(14.sp) }
                 if (supplyMax == 999) {
                     // Display for the final round
                     Text(
                         text = "Additional Supply Depot required", //"POWER OVERWHELMING",
                         fontWeight = FontWeight.Bold,
-                        fontSize = 14.sp,
+                        fontSize = textSize,
                         color = playerColor,
                         textAlign = TextAlign.Center,
+                        maxLines = 1,
+                        onTextLayout = { textLayoutResult ->
+                            if (textLayoutResult.hasVisualOverflow){
+                                textSize *=0.9f
+                            }
+                        },
                         modifier = Modifier
                             .weight(1f)
                             .padding(horizontal = 4.dp)
@@ -138,12 +153,15 @@ fun PlayerCard(
                     )
                 }
 
+                val isPlusEnabled = supplyCurrent < supplyMax && supplyMax != 999
+
                 FilledIconButton(
                     onClick = onSupplyIncrease,
                     modifier = Modifier.size(40.dp),
+                    enabled = isPlusEnabled,
                     colors = IconButtonDefaults.filledIconButtonColors(containerColor = playerColor.copy(alpha = 0.1f))
                 ) {
-                    Text("+", fontSize = 24.sp, color = playerColor, fontWeight = FontWeight.Bold)
+                    Text("+", fontSize = 24.sp, color = if(isPlusEnabled) playerColor else Color.Gray, fontWeight = FontWeight.Bold)
                 }
             }
         }
@@ -174,8 +192,11 @@ fun RoundCounter(
                 horizontalArrangement = Arrangement.Center,
                 modifier = Modifier.padding(top = 4.dp)
             ){
-                FilledIconButton(onClick = onRoundDecrease, modifier = Modifier.size(36.dp)) {
-                    Text("-", fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                FilledIconButton(
+                    onClick = onRoundDecrease,
+                    enabled = currentRound > 1,
+                    modifier = Modifier.size(36.dp)) {
+                    Text("-", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = if(currentRound > 1)Color.Black else Color.Gray )
                 }
                 Text(
                     text = "$currentRound / $roundMax",
@@ -183,8 +204,11 @@ fun RoundCounter(
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(horizontal = 24.dp)
                 )
-                FilledIconButton(onClick = onRoundIncrease, modifier = Modifier.size(36.dp)) {
-                    Text("+", fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                FilledIconButton(
+                    onClick = onRoundIncrease,
+                    enabled = currentRound < roundMax,
+                    modifier = Modifier.size(36.dp)) {
+                    Text("+", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = if(currentRound < roundMax)Color.Black else Color.Gray)
                 }
             }
         }

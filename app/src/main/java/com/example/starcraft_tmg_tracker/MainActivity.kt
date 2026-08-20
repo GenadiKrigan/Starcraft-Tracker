@@ -16,12 +16,18 @@ import androidx.navigation.navArgument
 import android.content.pm.ActivityInfo
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import com.example.starcraft_tmg_tracker.ui.theme.StarcraftTMGTrackerTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge() // Enables edge-to-edge display
+        val windowInsetsController = WindowCompat.getInsetsController(window, window.decorView) // Getting the Controller to control the system bars
+        windowInsetsController.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE // Setting the behavior of the controller
+        windowInsetsController.hide(WindowInsetsCompat.Type.systemBars()) // Hiding the notification bar at the top and the navigation buttons at the bottom/side
         setContent {
             // Using the project's custom theme
             StarcraftTMGTrackerTheme {

@@ -4,13 +4,17 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -21,9 +25,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.max
 import androidx.compose.ui.unit.sp
 import com.example.starcraft_tmg_tracker.ui.theme.StarcraftTMGTrackerTheme
 
@@ -75,6 +81,16 @@ fun GameScreen(
             redSupply = redSupply
         )
     }
+    // Definitions for calculating camera symmetry
+    val layoutDirection = LocalLayoutDirection.current
+    val cutoutPadding = WindowInsets.displayCutout.asPaddingValues()
+
+    // Extracting the margins required on the right and left sides due to the camera
+    val leftCutout = cutoutPadding.calculateLeftPadding(layoutDirection)
+    val rightCutout = cutoutPadding.calculateRightPadding(layoutDirection)
+
+    // Choosing the larger of the two intervals to maintain balance
+    val symmetricPadding = max(leftCutout, rightCutout)
 
     // Prevent the screen from turning off during gameplay
     KeepScreenOn()
@@ -82,6 +98,7 @@ fun GameScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
+            .padding(horizontal = symmetricPadding)
             .padding(8.dp)
             .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -91,13 +108,17 @@ fun GameScreen(
             modifier = Modifier.fillMaxWidth()
         ){
             // Back button
-            TextButton(
+            Button(
                 onClick = onEndGameClick,
                 modifier = Modifier
                     .align(Alignment.CenterStart)
-                    .padding(start = 50.dp)
+                    .padding(start = 50.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color.DarkGray,
+                    contentColor = Color.White
+                )
             ) {
-                Text("< BACK", fontSize = 18.sp, color = Color.Gray, fontWeight = FontWeight.Bold)
+                Text("< BACK", fontSize = 18.sp, fontWeight = FontWeight.Bold)
             }
             // Round counter
             RoundCounter(

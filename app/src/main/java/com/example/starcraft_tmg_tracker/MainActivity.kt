@@ -27,7 +27,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge() // Enables edge-to-edge display
         val windowInsetsController = WindowCompat.getInsetsController(window, window.decorView) // Getting the Controller to control the system bars
         windowInsetsController.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE // Setting the behavior of the controller
-        windowInsetsController.hide(WindowInsetsCompat.Type.systemBars()) // Hiding the notification bar at the top and the navigation buttons at the bottom/side
+        windowInsetsController.hide(WindowInsetsCompat.Type.systemBars()) //  Hiding the notification bar at the top and the navigation buttons at the bottom/side
         setContent {
             // Using the project's custom theme
             StarcraftTMGTrackerTheme {
@@ -40,6 +40,12 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        val windowInsetsController = WindowCompat.getInsetsController(window, window.decorView)
+        windowInsetsController.hide(WindowInsetsCompat.Type.systemBars())
     }
 }
 

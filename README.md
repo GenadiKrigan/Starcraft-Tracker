@@ -24,10 +24,10 @@ Customize every match to yours preferences:
 
 ---
 
-## How to Install (v1.1.1)
+## How to Install (v1.1.2)
 
 1.  **Download:** Open this repository on your Android device and navigate to the Releases section.
-2.  **Get the APK:** Download the file named `Starcraft_TMG_Tracker_v1.1.1.apk`.
+2.  **Get the APK:** Download the file named `Starcraft_TMG_Tracker_v1.1.2.apk`.
 3.  **Permissions:** 
     *   Open the `.apk` file from your downloads.
     *   If prompted, go to **Settings** and enable **"Allow from this source"** for your browser or file manager.
